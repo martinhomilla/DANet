@@ -138,7 +138,7 @@ def validate_eval_set(eval_set, eval_name, X_train, y_train):
             + f"{X.shape} and X_train {X_train.shape}"
         )
         assert len(X.shape) == len(X_train.shape), msg
-
+        print(y.shape, y_train.shape)
         msg = (
             f"Dimension mismatch between y_{name} "
             + f"{y.shape} and y_train {y_train.shape}"

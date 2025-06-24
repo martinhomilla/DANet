@@ -102,7 +102,7 @@ def unique_labels(*ys):
         raise ValueError("Mix type of y not allowed, got types %s" % ys_types)
 
     label_type = ys_types.pop()
-
+    print(_FN_UNIQUE_LABELS.get(label_type, None))
     # Get the unique set of labels
     _unique_labels = _FN_UNIQUE_LABELS.get(label_type, None)
     if not _unique_labels:

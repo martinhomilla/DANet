@@ -210,6 +210,7 @@ class History(Callback):
         self.history.update({name: [] for name in self.trainer._metrics_names})
         self.start_time = logs["start_time"]
         self.epoch_loss = 0.0
+        self.trainer.log.save_config(cfg) # Save the configuration to log
 
     def on_epoch_begin(self, epoch, logs=None):
         self.epoch_metrics = {"loss": 0.0}

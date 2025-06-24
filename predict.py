@@ -17,7 +17,7 @@ def get_args():
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
     dataset = args.dataset
     model_file = args.model_file
-    task = 'regression' if dataset in ['year', 'yahoo', 'MSLR'] else 'classification'
+    task = 'regression' if dataset in ['year', 'yahoo', 'MSLR', 'california_housing'] else 'classification'
 
     return dataset, model_file, task, len(args.gpu_id)
 
@@ -60,6 +60,8 @@ if __name__ == '__main__':
     clf.load_model(filepath, input_dim=X_test.shape[1], output_dim=output_dim, n_gpu=n_gpu)
 
     preds_test = clf.predict(X_test)
+    print(f"Predictions for {dataset} dataset: {preds_test[10:15]}")
+    print(f"True labels for {dataset} dataset: {y_test[10:15]}")
     test_value = metric(y_pred=preds_test, y_true=y_test)
 
     if task == 'classification':

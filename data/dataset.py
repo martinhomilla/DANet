@@ -3,6 +3,8 @@ import numpy as np
 from sklearn.preprocessing import QuantileTransformer
 from sklearn.model_selection import train_test_split
 from category_encoders import LeaveOneOutEncoder
+from sklearn.datasets import fetch_california_housing
+
 
 def remove_unused_column(data):
     unused_list = []
@@ -28,9 +30,32 @@ def quantile_transform(X_train, X_valid, X_test):
     X_test = qt.transform(X_test)
 
     return X_train, X_valid, X_test
+def california_housing():
+    print("Loading California Housing dataset...")
+    target = 'MedHouseVal'
+    data = fetch_california_housing(as_frame=True).frame
+    data = data.drop(['MedInc'], axis=1)  # Se elimina por estar altamente correlacionada con el target
+    train_idx, test_idx = train_test_split(data.index, test_size=0.2, random_state=123, shuffle=True)
+    train = data.loc[train_idx]
+    test = data.loc[test_idx]
+    # Dividir train en train y valid
+    train_idx2, valid_idx = train_test_split(train.index, test_size=0.2, random_state=123, shuffle=True)
+    train2 = train.loc[train_idx2]
+    valid = train.loc[valid_idx]
 
+    y_train = train2[target].values
+    X_train = train2.drop([target], axis=1).values
+    y_valid = valid[target].values
+    X_valid = valid.drop([target], axis=1).values
+    y_test = test[target].values
+    X_test = test.drop([target], axis=1).values
+
+    X_train, X_valid, X_test = quantile_transform(X_train, X_valid, X_test)
+
+    return X_train, y_train, X_valid, y_valid, X_test, y_test
 def forest_cover():
     target = "Covertype"
+    print("Loading FOREST Housing dataset...")
 
     bool_columns = [
         "Wilderness_Area1", "Wilderness_Area2", "Wilderness_Area3",
@@ -210,6 +235,7 @@ def cardio():
 
 
 def get_data(datasetname):
+    print(datasetname == 'california_housing')
     if datasetname == 'forest':
         return forest_cover()
     elif datasetname == 'MSLR':
@@ -224,6 +250,8 @@ def get_data(datasetname):
         return epsilon()
     elif datasetname == 'click':
         return click()
+    elif datasetname == 'california_housing':
+        return  california_housing()
 
 if __name__ == '__main__':
     forest_cover()

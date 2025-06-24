@@ -49,8 +49,8 @@ def set_task_model(task, std=None, seed=1):
         clf = DANetRegressor(
             std=std,
             optimizer_fn=QHAdam,
-            optimizer_params=dict(lr=fit_config['lr'], weight_decay=fit_config['weight_decay'], nus=(0.8, 1.0)),
-            scheduler_params=dict(gamma=0.95, step_size=fit_config['schedule_step']),
+            optimizer_params=dict(lr=fit_config['lr'], weight_decay=fit_config.get('weight_decay', 1e-5), nus=(0.8, 1.0)),
+            scheduler_params=dict(gamma=0.95, step_size=fit_config.get('schedule_step', 0)),
             scheduler_fn=torch.optim.lr_scheduler.StepLR,
             layer=model_config['layer'],
             base_outdim=model_config['base_outdim'],
@@ -76,7 +76,6 @@ if __name__ == '__main__':
         y_test = normalize_reg_label(y_test, std, mu)
 
     clf, eval_metric = set_task_model(task, std, seed)
-
     clf.fit(
         X_train=X_train, y_train=y_train,
         eval_set=[(X_valid, y_valid)],

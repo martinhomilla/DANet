@@ -43,6 +43,13 @@ class Train_Log():
         logFile.write(log + '\n')
         logFile.close()
 
+    # Guardar la configuración del entrenamiento en un archivo
+    def save_config(self, config):
+        with open(os.path.join(self.log_dir, 'config.txt'), 'w') as f:
+            for key, value in config.items():
+                f.write(f"{key}: {value}\n")
+        print('Config saved!')
+
 
     def save_tensorboard(self, info, epoch):
         for tag, value in info.items():
