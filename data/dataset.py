@@ -34,11 +34,16 @@ def california_housing():
     print("Loading California Housing dataset...")
     target = 'MedHouseVal'
     data = fetch_california_housing(as_frame=True).frame
-    data = data.drop(['MedInc'], axis=1)  # Se elimina por estar altamente correlacionada con el target
+    print("Number of samples: ", data.shape[0])
+    #data = data.drop(['MedInc'], axis=1)  # Se elimina por estar altamente correlacionada con el target
+    #data = data.drop(['Latitude'], axis=1)
+    #data = data.drop(['Longitude'], axis=1)
+
+    # División de tran y test (20% test size)
     train_idx, test_idx = train_test_split(data.index, test_size=0.2, random_state=123, shuffle=True)
     train = data.loc[train_idx]
     test = data.loc[test_idx]
-    # Dividir train en train y valid
+    # Extraer de train un 20% para validación
     train_idx2, valid_idx = train_test_split(train.index, test_size=0.2, random_state=123, shuffle=True)
     train2 = train.loc[train_idx2]
     valid = train.loc[valid_idx]

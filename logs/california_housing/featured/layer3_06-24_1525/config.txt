@@ -1,0 +1,15 @@
+seed: 324
+dataset: california_housing
+task: regression
+resume_dir: 
+model: base_outdim: 64
+drop_rate: 0.1
+k: 5
+layer: 3
+logname: layer3
+fit: batch_size: 8192
+lr: 0.008
+max_epochs: 1000
+patience: 50
+schedule_step: 30
+virtual_batch_size: 256

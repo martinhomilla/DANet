@@ -2,6 +2,8 @@ import time
 import datetime
 import copy
 import numpy as np
+import os
+import csv
 from dataclasses import dataclass, field
 from typing import List, Any
 from config.default import cfg
@@ -156,6 +158,32 @@ class EarlyStopping(Callback):
         print(self.best_msg)
         if self.trainer.log:
             self.trainer.log.save_log(self.trainer.history['msg'] + '\n' + self.best_msg)
+        with open(self.trainer.log.log_dir + '/losses_log.csv', 'a+', newline='') as f:
+            f.seek(0)
+            last_best_loss = None
+            try:
+                reader = list(csv.reader(f))
+                if len(reader) > 1:
+                    last_best_loss = float(reader[-1][2])
+            except Exception:
+                last_best_loss = None
+            loss = logs.get('loss')
+            writer = csv.writer(f)
+            if os.stat(self.trainer.log.log_dir + '/losses_log.csv').st_size == 0:
+                writer.writerow(['epoch', 'loss', 'best_loss'])
+            if last_best_loss is None or loss < last_best_loss:
+                best_loss = loss
+            else:
+                best_loss = last_best_loss
+            writer.writerow([epoch, loss, best_loss])
+
+        with open(self.trainer.log.log_dir + '/valid_mse_log.csv', 'a', newline='') as f:
+            writer = csv.writer(f)
+            if os.stat(self.trainer.log.log_dir + '/valid_mse_log.csv').st_size == 0:
+                writer.writerow(['epoch', 'valid_mse', 'best_valid_mse'])
+            writer.writerow([epoch, current_loss, self.best_loss])
+
+
 
     def on_train_end(self, logs=None):
         self.trainer.best_epoch = self.best_epoch
@@ -179,6 +207,58 @@ class EarlyStopping(Callback):
             )
             print(msg)
         print("Best weights from best epoch are automatically used!")
+
+        #plotear losse_log
+        if self.trainer.log:
+            import matplotlib.pyplot as plt
+
+            with open(self.trainer.log.log_dir + '/losses_log.csv', 'r') as f:
+                reader = csv.reader(f)
+                next(reader)
+                epochs = []
+                losses = []
+                best_losses = []
+                for row in reader:
+                    epochs.append(int(row[0]))
+                    losses.append(float(row[1]))
+                    best_losses.append(float(row[2]))
+            plt.figure(figsize=(10, 5))
+            plt.plot(epochs, losses, label='Current Loss')
+            plt.plot(epochs, best_losses, label='Best Loss', linestyle='--')
+            plt.xlabel('Epochs')
+            plt.ylabel('Loss')
+            plt.title('Losses over epochs')
+            plt.legend()
+            plt.savefig(self.trainer.log.log_dir + '/losses_plot.png')
+
+            plt.ylim(min(best_losses)-0.05, min(best_losses) + 0.08)
+            plt.savefig(self.trainer.log.log_dir + '/losses_plot_zoom.png')
+
+        #plotear valid_mse_log
+        if self.trainer.log:
+            with open(self.trainer.log.log_dir + '/valid_mse_log.csv', 'r') as f:
+                reader = csv.reader(f)
+                next(reader)
+                epochs = []
+                valid_mses = []
+                best_valid_mses = []
+                for row in reader:
+                    epochs.append(int(row[0]))
+                    valid_mses.append(float(row[1]))
+                    best_valid_mses.append(float(row[2]))
+            plt.figure(figsize=(10, 5))
+            plt.plot(epochs, valid_mses, label='Current Valid MSE')
+            plt.plot(epochs, best_valid_mses, label='Best Valid MSE', linestyle='--')
+            plt.xlabel('Epochs')
+            plt.ylabel('Valid MSE')
+            plt.title('Valid MSE over epochs')
+            plt.legend()
+            plt.savefig(self.trainer.log.log_dir + '/valid_mse_plot.png')
+
+            plt.ylim(min(best_valid_mses)-0.05, min(best_valid_mses) + 0.08)
+            plt.savefig(self.trainer.log.log_dir + '/valid_mse_plot_zoom.png')
+
+
 
 
 @dataclass
@@ -234,6 +314,8 @@ class History(Callback):
         print(msg)
         if self.trainer.log:
             self.trainer.log.save_tensorboard(self.epoch_metrics, epoch)
+
+
 
     def on_batch_end(self, batch, logs=None):
         batch_size = logs["batch_size"]

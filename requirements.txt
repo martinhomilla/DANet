@@ -3,3 +3,4 @@ category_encoders
 yacs
 tensorboard>=2.2.2
 qhoptim
+matplotlib

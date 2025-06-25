@@ -51,6 +51,8 @@ class Train_Log():
         print('Config saved!')
 
 
+
+
     def save_tensorboard(self, info, epoch):
         for tag, value in info.items():
             self.writer.add_scalar(tag, value, global_step=epoch)

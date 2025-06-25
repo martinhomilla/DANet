@@ -6,6 +6,7 @@ import numpy as np
 import argparse
 from data.dataset import get_data
 import os
+import matplotlib.pyplot as plt
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 
 def get_args():
@@ -41,6 +42,7 @@ def prepare_data(task, y_train, y_valid, y_test):
         y_test = np.vectorize(target_mapper.get)(y_test)
 
     elif task == 'regression':
+
         mu, std = y_train.mean(), y_train.std()
         print("mean = %.5f, std = %.5f" % (mu, std))
         y_train = normalize_reg_label(y_train, mu, std)
@@ -48,6 +50,34 @@ def prepare_data(task, y_train, y_valid, y_test):
         y_test = normalize_reg_label(y_test, mu, std)
 
     return output_dim, std, y_train, y_valid, y_test
+
+def plot_predictions(preds_test, y_test, dataset):
+    print(f"Predictions for {dataset} dataset: {preds_test[110:115]}")
+    print(f"True labels for {dataset} dataset: {y_test[110:115]}")
+
+
+    plt.figure(figsize=(10, 5))
+    plt.scatter(y_test, preds_test, label='Predictions', color='blue', alpha=0.5, s = 5)
+
+    max_value = max(np.max(y_test), np.max(preds_test))
+    min_value = min(np.min(y_test), np.min(preds_test))
+
+    margin = 0.01 * (max_value - min_value)
+    plot_min = min_value - margin
+    plot_max = max_value + margin
+
+    plt.plot([plot_min, plot_max], [plot_min, plot_max], color='red', linestyle='--', label='Ideal Prediction Line')
+
+    plt.title(f'Predictions vs True Labels for {dataset} Dataset')
+    plt.xlabel('Real Values')
+    plt.ylabel('Predicted Values')
+    plt.grid(True, linestyle='--', linewidth=0.5, color='gray')
+
+    plt.legend()
+    plt.show()
+
+
+
 
 if __name__ == '__main__':
     dataset, model_file, task, n_gpu = get_args()
@@ -60,8 +90,9 @@ if __name__ == '__main__':
     clf.load_model(filepath, input_dim=X_test.shape[1], output_dim=output_dim, n_gpu=n_gpu)
 
     preds_test = clf.predict(X_test)
-    print(f"Predictions for {dataset} dataset: {preds_test[10:15]}")
-    print(f"True labels for {dataset} dataset: {y_test[10:15]}")
+
+    plot_predictions(preds_test, y_test, dataset)
+
     test_value = metric(y_pred=preds_test, y_true=y_test)
 
     if task == 'classification':

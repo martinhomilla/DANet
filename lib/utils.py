@@ -194,3 +194,6 @@ def normalize_reg_label(label, mu, std):
     norm_label = ((label - mu) / std).astype(np.float32)
     norm_label = norm_label.reshape(-1, 1)
     return norm_label
+
+def denormalize_reg_label(y_normalized, mu, std):
+    return (y_normalized * std) + mu
