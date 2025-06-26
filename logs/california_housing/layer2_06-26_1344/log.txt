@@ -1,0 +1,96 @@
+epoch 1  | loss: 0.84237 | valid_mse: 1.3213  |  0:00:00s
+Best valid_mse:1.32130 on epoch 1
+epoch 2  | loss: 1.05151 | valid_mse: 1.27703 |  0:00:00s
+Best valid_mse:1.27703 on epoch 2
+epoch 1  | loss: 1.09729 | valid_mse: 1.23811 |  0:00:00s
+Best valid_mse:1.23811 on epoch 1
+epoch 2  | loss: 0.67265 | valid_mse: 1.21047 |  0:00:00s
+Best valid_mse:1.21047 on epoch 2
+epoch 1  | loss: 2.12811 | valid_mse: 1.28346 |  0:00:00s
+Best valid_mse:1.28346 on epoch 1
+epoch 2  | loss: 1.55501 | valid_mse: 1.27721 |  0:00:00s
+Best valid_mse:1.27721 on epoch 2
+epoch 1  | loss: 1.53801 | valid_mse: 1.28076 |  0:00:00s
+Best valid_mse:1.28076 on epoch 1
+epoch 2  | loss: 1.17132 | valid_mse: 1.24408 |  0:00:00s
+Best valid_mse:1.24408 on epoch 2
+epoch 1  | loss: 1.34371 | valid_mse: 1.31438 |  0:00:00s
+Best valid_mse:1.31438 on epoch 1
+epoch 2  | loss: 1.03435 | valid_mse: 1.24614 |  0:00:00s
+Best valid_mse:1.24614 on epoch 2
+epoch 1  | loss: 0.61495 | valid_mse: 1.30876 |  0:00:00s
+Best valid_mse:1.30876 on epoch 1
+epoch 2  | loss: 1.61649 | valid_mse: 1.28994 |  0:00:00s
+Best valid_mse:1.28994 on epoch 2
+epoch 1  | loss: 0.32512 | valid_mse: 1.29926 |  0:00:00s
+Best valid_mse:1.29926 on epoch 1
+epoch 2  | loss: 0.09436 | valid_mse: 1.35539 |  0:00:00s
+Best valid_mse:1.29926 on epoch 1
+epoch 1  | loss: 0.67512 | valid_mse: 1.34198 |  0:00:00s
+Best valid_mse:1.34198 on epoch 1
+epoch 2  | loss: 0.70169 | valid_mse: 1.30794 |  0:00:00s
+Best valid_mse:1.30794 on epoch 2
+epoch 1  | loss: 2.20156 | valid_mse: 1.32436 |  0:00:00s
+Best valid_mse:1.32436 on epoch 1
+epoch 2  | loss: 1.62335 | valid_mse: 1.26646 |  0:00:00s
+Best valid_mse:1.26646 on epoch 2
+epoch 1  | loss: 1.60865 | valid_mse: 1.28765 |  0:00:00s
+Best valid_mse:1.28765 on epoch 1
+epoch 2  | loss: 1.18856 | valid_mse: 1.23753 |  0:00:00s
+Best valid_mse:1.23753 on epoch 2
+epoch 1  | loss: 0.92711 | valid_mse: 1.2711  |  0:00:00s
+Best valid_mse:1.27110 on epoch 1
+epoch 2  | loss: 0.69521 | valid_mse: 1.25686 |  0:00:00s
+Best valid_mse:1.25686 on epoch 2
+epoch 1  | loss: 0.79314 | valid_mse: 1.25567 |  0:00:00s
+Best valid_mse:1.25567 on epoch 1
+epoch 2  | loss: 0.39648 | valid_mse: 1.24171 |  0:00:00s
+Best valid_mse:1.24171 on epoch 2
+epoch 1  | loss: 3.74603 | valid_mse: 1.36809 |  0:00:00s
+Best valid_mse:1.36809 on epoch 1
+epoch 2  | loss: 1.89293 | valid_mse: 1.41747 |  0:00:00s
+Best valid_mse:1.36809 on epoch 1
+epoch 1  | loss: 1.16647 | valid_mse: 1.29684 |  0:00:00s
+Best valid_mse:1.29684 on epoch 1
+epoch 2  | loss: 1.21465 | valid_mse: 1.24553 |  0:00:00s
+Best valid_mse:1.24553 on epoch 2
+epoch 1  | loss: 1.15468 | valid_mse: 1.29646 |  0:00:00s
+Best valid_mse:1.29646 on epoch 1
+epoch 2  | loss: 1.29063 | valid_mse: 1.25523 |  0:00:00s
+Best valid_mse:1.25523 on epoch 2
+epoch 1  | loss: 0.85198 | valid_mse: 1.33589 |  0:00:00s
+Best valid_mse:1.33589 on epoch 1
+epoch 2  | loss: 0.99724 | valid_mse: 1.27436 |  0:00:00s
+Best valid_mse:1.27436 on epoch 2
+epoch 1  | loss: 1.29727 | valid_mse: 1.31286 |  0:00:00s
+Best valid_mse:1.31286 on epoch 1
+epoch 2  | loss: 1.11657 | valid_mse: 1.27652 |  0:00:00s
+Best valid_mse:1.27652 on epoch 2
+epoch 1  | loss: 1.14546 | valid_mse: 1.38553 |  0:00:00s
+Best valid_mse:1.38553 on epoch 1
+epoch 2  | loss: 1.37861 | valid_mse: 1.29532 |  0:00:00s
+Best valid_mse:1.29532 on epoch 2
+epoch 1  | loss: 1.72366 | valid_mse: 1.2634  |  0:00:00s
+Best valid_mse:1.26340 on epoch 1
+epoch 2  | loss: 1.45067 | valid_mse: 1.22314 |  0:00:00s
+Best valid_mse:1.22314 on epoch 2
+epoch 1  | loss: 0.42916 | valid_mse: 1.31728 |  0:00:00s
+Best valid_mse:1.31728 on epoch 1
+epoch 2  | loss: 0.45215 | valid_mse: 1.24595 |  0:00:00s
+Best valid_mse:1.24595 on epoch 2
+epoch 1  | loss: 0.82447 | valid_mse: 0.60226 |  0:00:00s
+Best valid_mse:0.60226 on epoch 1
+epoch 2  | loss: 0.47311 | valid_mse: 0.4905  |  0:00:01s
+Best valid_mse:0.49050 on epoch 2
+epoch 1  | loss: 1.34601 | valid_mse: 1.0397  |  0:00:00s
+Best valid_mse:1.03970 on epoch 1
+epoch 2  | loss: 0.65012 | valid_mse: 0.72874 |  0:00:00s
+Best valid_mse:0.72874 on epoch 2
+epoch 1  | loss: 0.82447 | valid_mse: 0.60226 |  0:00:00s
+Best valid_mse:0.60226 on epoch 1
+epoch 2  | loss: 0.47311 | valid_mse: 0.4905  |  0:00:01s
+Best valid_mse:0.49050 on epoch 2
+epoch 1  | loss: 1.34601 | valid_mse: 1.0397  |  0:00:00s
+Best valid_mse:1.03970 on epoch 1
+epoch 2  | loss: 0.65012 | valid_mse: 0.72874 |  0:00:00s
+Best valid_mse:0.72874 on epoch 2
