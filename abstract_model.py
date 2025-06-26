@@ -215,7 +215,7 @@ class DANsModel(BaseEstimator):
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.n_gpu = n_gpu
-        load_model = torch.load(filepath, map_location=self.device)
+        load_model = torch.load(filepath, map_location=self.device, weights_only=False)
         self.layer, self.virtual_batch_size = load_model['layer_num'], load_model['virtual_batch_size']
         self.k, self.base_outdim = load_model['k'], load_model['base_outdim']
         self._set_network()

@@ -3,11 +3,12 @@ import argparse
 import os
 import torch.distributed
 import torch.backends.cudnn
-from sklearn.metrics import accuracy_score, mean_squared_error
+from sklearn.metrics import accuracy_score, mean_squared_error, r2_score
 from data.dataset import get_data
 from lib.utils import normalize_reg_label
 from qhoptim.pyt import QHAdam
 from config.default import cfg
+from lib.multiclass_utils import infer_output_dim
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 
 def get_args():
@@ -71,11 +72,12 @@ if __name__ == '__main__':
     if task == 'regression':
         mu, std = y_train.mean(), y_train.std()
         print("mean = %.5f, std = %.5f" % (mu, std))
-        y_train = normalize_reg_label(y_train, std, mu)
-        y_valid = normalize_reg_label(y_valid, std, mu)
-        y_test = normalize_reg_label(y_test, std, mu)
+        y_train = normalize_reg_label(y_train, mu, std)
+        y_valid = normalize_reg_label(y_valid, mu, std)
+        y_test = normalize_reg_label(y_test, mu, std)
 
     clf, eval_metric = set_task_model(task, std, seed)
+
     clf.fit(
         X_train=X_train, y_train=y_train,
         eval_set=[(X_valid, y_valid)],
@@ -96,4 +98,7 @@ if __name__ == '__main__':
 
     elif task == 'regression':
         test_mse = mean_squared_error(y_pred=preds_test, y_true=y_test)
+        r2_value = r2_score(y_true=y_test, y_pred=preds_test)
+
         print(f"FINAL TEST MSE FOR {train_config['dataset']} : {test_mse}")
+        print(f"FINAL TEST R2 FOR {train_config['dataset']} : {r2_value}")

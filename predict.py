@@ -1,7 +1,7 @@
 from DAN_Task import DANetClassifier, DANetRegressor
-from sklearn.metrics import accuracy_score, mean_squared_error
+from sklearn.metrics import accuracy_score, mean_squared_error, r2_score
 from lib.multiclass_utils import infer_output_dim
-from lib.utils import normalize_reg_label
+from lib.utils import normalize_reg_label, denormalize_reg_label
 import numpy as np
 import argparse
 from data.dataset import get_data
@@ -13,14 +13,16 @@ def get_args():
     parser = argparse.ArgumentParser(description='PyTorch v1.4, DANet Testing')
     parser.add_argument('-d', '--dataset', type=str, default='forest', help='Dataset Name for extracting data')
     parser.add_argument('-m', '--model_file', type=str, default='./weights/forest_layer32.pth', metavar="FILE", help='Inference model path')
+    parser.add_argument('-p', '--plot' ,type =int, default=1, help='Plot predictions')
     parser.add_argument('-g', '--gpu_id', type=str, default='1', help='GPU ID')
     args = parser.parse_args()
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
     dataset = args.dataset
     model_file = args.model_file
+    plot = args.plot
     task = 'regression' if dataset in ['year', 'yahoo', 'MSLR', 'california_housing'] else 'classification'
 
-    return dataset, model_file, task, len(args.gpu_id)
+    return dataset, model_file, task, len(args.gpu_id), plot
 
 def set_task_model(task):
     if task == 'classification':
@@ -49,12 +51,9 @@ def prepare_data(task, y_train, y_valid, y_test):
         y_valid = normalize_reg_label(y_valid, mu, std)
         y_test = normalize_reg_label(y_test, mu, std)
 
-    return output_dim, std, y_train, y_valid, y_test
+    return output_dim, mu, std, y_train, y_valid, y_test
 
 def plot_predictions(preds_test, y_test, dataset):
-    print(f"Predictions for {dataset} dataset: {preds_test[110:115]}")
-    print(f"True labels for {dataset} dataset: {y_test[110:115]}")
-
 
     plt.figure(figsize=(10, 5))
     plt.scatter(y_test, preds_test, label='Predictions', color='blue', alpha=0.5, s = 5)
@@ -80,23 +79,25 @@ def plot_predictions(preds_test, y_test, dataset):
 
 
 if __name__ == '__main__':
-    dataset, model_file, task, n_gpu = get_args()
+    dataset, model_file, task, n_gpu, plot = get_args()
     print('===> Getting data ...')
     X_train, y_train, X_valid, y_valid, X_test, y_test = get_data(dataset)
-    output_dim, std, y_train, y_valid, y_test = prepare_data(task, y_train, y_valid, y_test)
+    output_dim,mu, std, y_train, y_valid, y_test = prepare_data(task, y_train, y_valid, y_test)
     clf, metric = set_task_model(task)
 
     filepath = model_file
-    clf.load_model(filepath, input_dim=X_test.shape[1], output_dim=output_dim, n_gpu=n_gpu)
+    clf.load_model(filepath, input_dim=X_test.shape[1], output_dim=1, n_gpu=n_gpu)
 
     preds_test = clf.predict(X_test)
-
-    plot_predictions(preds_test, y_test, dataset)
+    if(plot):
+        plot_predictions(preds_test, y_test, dataset)
 
     test_value = metric(y_pred=preds_test, y_true=y_test)
+    r2_value = r2_score(y_true=y_test, y_pred=preds_test)
 
     if task == 'classification':
         print(f"FINAL TEST ACCURACY FOR {dataset} : {test_value}")
 
     elif task == 'regression':
         print(f"FINAL TEST MSE FOR {dataset} : {test_value}")
+        print(f"FINAL TEST R^2 FOR {dataset} : {r2_value}")

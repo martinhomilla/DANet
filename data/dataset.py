@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from pandas import read_csv
 from sklearn.preprocessing import QuantileTransformer
 from sklearn.model_selection import train_test_split
 from category_encoders import LeaveOneOutEncoder
@@ -33,11 +34,8 @@ def quantile_transform(X_train, X_valid, X_test):
 def california_housing():
     print("Loading California Housing dataset...")
     target = 'MedHouseVal'
-    data = fetch_california_housing(as_frame=True).frame
+    data = read_csv("./data/california_housing.csv")
     print("Number of samples: ", data.shape[0])
-    #data = data.drop(['MedInc'], axis=1)  # Se elimina por estar altamente correlacionada con el target
-    #data = data.drop(['Latitude'], axis=1)
-    #data = data.drop(['Longitude'], axis=1)
 
     # División de tran y test (20% test size)
     train_idx, test_idx = train_test_split(data.index, test_size=0.2, random_state=123, shuffle=True)

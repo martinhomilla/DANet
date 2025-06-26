@@ -6,6 +6,9 @@ import os
 import csv
 from dataclasses import dataclass, field
 from typing import List, Any
+
+from PIL.SpiderImagePlugin import iforms
+
 from config.default import cfg
 class Callback:
     """
@@ -147,7 +150,8 @@ class EarlyStopping(Callback):
                               'base_outdim': self.trainer.base_outdim,
                               'k': self.trainer.k,
                               'virtual_batch_size': self.trainer.virtual_batch_size,
-                              'state_dict': self.trainer.network.state_dict()
+                              'state_dict': self.trainer.network.state_dict(),
+
                               }
                 self.trainer.log.save_best_model(best_model)
         else:
