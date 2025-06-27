@@ -71,7 +71,9 @@ class DANsModel(BaseEstimator):
         callbacks=None,
         logname=None,
         resume_dir=None,
-        n_gpu=1
+        n_gpu=1,
+        logs_enabled=True,
+        online_dir = None
     ):
         """Train a neural network stored in self.network
         Using train_dataloader for training data and
@@ -115,7 +117,7 @@ class DANsModel(BaseEstimator):
         self.virtual_batch_size = virtual_batch_size
         self.input_dim = X_train.shape[1]
         self._stop_training = False
-        self.log = Train_Log(logname, resume_dir) if (logname or resume_dir) else None
+        self.log = Train_Log(logname, resume_dir, online_dir) if (logname or resume_dir) else None
         self.n_gpu = n_gpu
         eval_set = eval_set if eval_set else []
 
@@ -132,7 +134,7 @@ class DANsModel(BaseEstimator):
         self._set_optimizer()
         self._set_callbacks(callbacks)
 
-        if resume_dir:
+        if resume_dir and logs_enabled:
             start_epoch, self.network, self._optimizer, best_value, best_epoch = self.log.load_checkpoint(self._optimizer)
 
 
@@ -154,7 +156,7 @@ class DANsModel(BaseEstimator):
                 self._predict_epoch(eval_name, valid_dataloader)
 
             # Call method on_epoch_end for all callbacks
-            self._callback_container.on_epoch_end(epoch_idx, logs=self.history.epoch_metrics)
+            self._callback_container.on_epoch_end(epoch_idx,logs_enabled, logs=self.history.epoch_metrics)
 
             #save checkpoint
             self.save_check()
@@ -163,7 +165,7 @@ class DANsModel(BaseEstimator):
                 break
 
         # Call method on_train_end for all callbacks
-        self._callback_container.on_train_end()
+        self._callback_container.on_train_end(logs_enabled)
         self.network.eval()
 
         return best_value

@@ -6,7 +6,9 @@ import os
 import torch.distributed
 import torch.backends.cudnn
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
+from datetime import datetime
 from sklearn.metrics import accuracy_score, mean_squared_error, r2_score
 from data.dataset import get_data
 from lib.utils import normalize_reg_label
@@ -66,6 +68,7 @@ def set_task_model(task, std=None, seed=1):
         )
         eval_metric = ['mse']
     return clf, eval_metric
+
 def normalize_data(y_train, y_valid, y_test):
     mu, std = None, None
     if task == 'regression':
@@ -82,7 +85,7 @@ def batches_partition(X_train,X_val, y_train, y_val , batch_size):
     list_batches = []
     n_samples = X_train.shape[0]
     indices = np.arange(n_samples)
-    np.random.shuffle(indices)
+    # np.random.shuffle(indices) I think that it affects to forgetting phase
     X_data = X_train[indices]
     y_data = y_train[indices]
     for start in range(0, n_samples, batch_size):
@@ -100,8 +103,8 @@ def extract_results_csv(results, csv_file):
             writer.writerow([batch, mse, r2])
 
 
-def save_results_image():
-    with open('results/resultados_prueba.csv', 'r', newline='') as csvfile:
+def save_results_image(directory, csv_file, forgetting_phase = None):
+    with open(csv_file, 'r', newline='') as csvfile:
         reader = csv.reader(csvfile)
         next(reader)
         batches = []
@@ -115,13 +118,59 @@ def save_results_image():
             mses.append(mse)
             r2s.append(r2)
     plt.figure(figsize=(10, 5))
+    if(forgetting_phase is not None):
+        start_phase, end_phase = forgetting_phase
+        plt.axvspan(start_phase, end_phase, color='red', alpha=0.3, label='Forgetting Phase')
+        print(forgetting_phase)
     plt.plot(batches, mses, label='MSE')
     plt.plot(batches, r2s, label='R2', linestyle='--')
     plt.xlabel('Batches')
     plt.ylabel('MSE')
     plt.title('Evolution of MSE and R2 over Batches')
     plt.legend()
-    plt.savefig('results/resultados_prueba.png')
+    plt.savefig(directory + '/results_image.png')
+
+
+def forgetting_criterion(sample):
+    """
+    Define the forgetting criterion for the sample.
+    """
+
+    if(sample['MedInc']>=5):
+        return False
+    if(sample['MedInc']<3.1):
+        return False
+    if(sample['AveOccup']>=2.4):
+        return False
+    return True
+
+def introduce_forgetting_range(dataset_without_forgetting, forgetting_range):
+    """
+    Introduce forgetting range in the dataset.
+    """
+    start_phase = int(forgetting_range[0] * len(dataset_without_forgetting))
+    end_phase = int(forgetting_range[1] * len(dataset_without_forgetting))
+
+    print(f"Forgetting range starts at {start_phase}")
+
+    start = dataset_without_forgetting[:start_phase].copy()
+    forgetting_phase = dataset_without_forgetting[start_phase:end_phase].copy()
+    end = dataset_without_forgetting[end_phase:].copy()
+
+    # Apply forgetting criterion to the forgetting phase
+    forgetting_phase = forgetting_phase[~forgetting_phase.apply(forgetting_criterion, axis=1)]
+
+    end_phase = len(start) + len(forgetting_phase)
+    print(f"Forgetting range ends in {end_phase}")
+
+    dataset_with_forgetting_phase = pd.concat([start, forgetting_phase, end], axis=0)
+    dataset_with_forgetting_phase.reset_index(drop=True, inplace=True)
+
+    print(f"Samples after introducing forgetting phase: {len(dataset_with_forgetting_phase)}")
+    forgetting_phase = (start_phase, end_phase)
+    return dataset_with_forgetting_phase, forgetting_phase
+
+
 
 
 
@@ -130,12 +179,19 @@ def save_results_image():
 
 
 if __name__ == '__main__':
-    batch_size = 3000
     print('===> Setting configuration ...')
     train_config, fit_config, model_config, task, seed, n_gpu = get_args()
-    logname = None if train_config['logname'] == '' else train_config['dataset'] + '/' + train_config['logname']
+    batch_size = fit_config['batch_size']
+
+    time_str = datetime.now().strftime("%m-%d_%H%M")
+    online_directory = f'online_{batch_size}_{time_str}/'
+    directory = f'results/online_{batch_size}_{time_str}'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    logname = None if train_config['logname'] == '' else train_config['dataset'] + '/' + online_directory +train_config['logname']
+
     print('===> Getting data ...')
-    X_train, y_train, X_valid, y_valid, X_test, y_test = get_data(train_config['dataset'])
+    X_train, y_train, X_valid, y_valid, X_test, y_test, forgetting_phase = get_data(train_config['dataset'])
 
     y_train, y_valid, y_test, mu, std = normalize_data(y_train, y_valid, y_test)
 
@@ -145,6 +201,7 @@ if __name__ == '__main__':
     print('Número de batches: ', len(batches_list))
     count = 0
     results = []
+
     for x_batch, y_batch in batches_list:
         count += 1
         print(f"\n------------------------------------------------------------"
@@ -158,8 +215,10 @@ if __name__ == '__main__':
             max_epochs=fit_config['max_epochs'], patience=fit_config['patience'],
             batch_size=fit_config['batch_size'], virtual_batch_size=fit_config['virtual_batch_size'],
             logname=logname,
-            resume_dir=train_config['resume_dir'],
-            n_gpu=n_gpu
+            resume_dir=train_config['resume_dir'] ,
+            n_gpu=n_gpu,
+            logs_enabled = False,
+            online_dir = None
         )
 
         preds_test = clf.predict(X_test)
@@ -176,5 +235,7 @@ if __name__ == '__main__':
             print(f"FINAL TEST MSE FOR {train_config['dataset']} : {test_mse}")
             print(f"FINAL TEST R2 FOR {train_config['dataset']} : {r2_value}")
 
-    extract_results_csv(results, 'results/resultados_prueba.csv')
-    save_results_image()
+    forgetting_phase = (forgetting_phase[0] // batch_size, forgetting_phase[1] // batch_size)
+
+    extract_results_csv(results, directory + '/resultados_online.csv')
+    save_results_image(directory, directory + '/resultados_online.csv', forgetting_phase)

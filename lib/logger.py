@@ -4,12 +4,14 @@ from datetime import datetime
 from torch.utils.tensorboard import SummaryWriter
 
 class Train_Log():
-    def __init__(self, logname, resume_dir=None):
+    def __init__(self, logname, resume_dir=None, online_dir = None):
         time_str = datetime.now().strftime("%m-%d_%H%M")
         if resume_dir:
             self.resume_dir = os.path.join('./logs', resume_dir)
             self.log_dir = self.resume_dir
-
+        elif online_dir:
+            self.resume_dir = online_dir
+            self.log_dir = os.path.join(online_dir, logname + '_' + time_str)
         else:
             self.log_dir = os.path.join('./logs/',  logname + '_' +time_str)
 

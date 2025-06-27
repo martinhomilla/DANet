@@ -31,6 +31,52 @@ def quantile_transform(X_train, X_valid, X_test):
     X_test = qt.transform(X_test)
 
     return X_train, X_valid, X_test
+
+def forgetting_criterion(sample):
+    """
+    Define the forgetting criterion for the sample.    """
+    #CRITERIO DE BRUNO, PARECE QUE NO FUNCIONA
+    # if(sample['MedInc']>=5):
+    #     return False
+    # if(sample['MedInc']<3.1):
+    #     return False
+    # if(sample['AveOccup']>=2.4):
+    #     return False
+    # return True
+
+    if(sample['MedHouseVal'] < 1.2):
+        return False
+    if(sample['MedHouseVal'] > 1.9):
+        return False
+    return True
+
+
+def introduce_forgetting_range(dataset_without_forgetting, forgetting_range):
+    """
+    Introduce forgetting range in the dataset.
+    """
+    start_phase = int(forgetting_range[0] * len(dataset_without_forgetting))
+    end_phase = int(forgetting_range[1] * len(dataset_without_forgetting))
+
+    print(f"Forgetting range starts at {start_phase}")
+
+    start = dataset_without_forgetting[:start_phase].copy()
+    forgetting_phase = dataset_without_forgetting[start_phase:end_phase].copy()
+    end = dataset_without_forgetting[end_phase:].copy()
+
+    # Apply forgetting criterion to the forgetting phase
+    forgetting_phase = forgetting_phase[~forgetting_phase.apply(forgetting_criterion, axis=1)]
+
+    end_phase = len(start) + len(forgetting_phase)
+    print(f"Forgetting range ends in {end_phase}")
+
+    dataset_with_forgetting_phase = pd.concat([start, forgetting_phase, end], axis=0)
+    dataset_with_forgetting_phase.reset_index(drop=True, inplace=True)
+
+    print(f"Samples after introducing forgetting phase: {len(dataset_with_forgetting_phase)}")
+    forgetting_phase = (start_phase, end_phase)
+    return dataset_with_forgetting_phase, forgetting_phase
+
 def california_housing():
     print("Loading California Housing dataset...")
     target = 'MedHouseVal'
@@ -41,6 +87,10 @@ def california_housing():
     train_idx, test_idx = train_test_split(data.index, test_size=0.2, random_state=123, shuffle=True)
     train = data.loc[train_idx]
     test = data.loc[test_idx]
+
+    # Introducir fase de olvido
+    forgetting_range = (0.4, 0.6)  # Porcentaje de olvido
+    train, forgetting_phase = introduce_forgetting_range(train, forgetting_range)
     # Extraer de train un 20% para validación
     train_idx2, valid_idx = train_test_split(train.index, test_size=0.2, random_state=123, shuffle=True)
     train2 = train.loc[train_idx2]
@@ -55,7 +105,8 @@ def california_housing():
 
     X_train, X_valid, X_test = quantile_transform(X_train, X_valid, X_test)
 
-    return X_train, y_train, X_valid, y_valid, X_test, y_test
+    return X_train, y_train, X_valid, y_valid, X_test, y_test, forgetting_phase
+
 def forest_cover():
     target = "Covertype"
     print("Loading FOREST Housing dataset...")
@@ -238,7 +289,6 @@ def cardio():
 
 
 def get_data(datasetname):
-    print(datasetname == 'california_housing')
     if datasetname == 'forest':
         return forest_cover()
     elif datasetname == 'MSLR':

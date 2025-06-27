@@ -27,7 +27,7 @@ class Callback:
     def on_epoch_begin(self, epoch, logs=None):
         pass
 
-    def on_epoch_end(self, epoch, logs=None):
+    def on_epoch_end(self, epoch,logs_enabled, logs=None):
         pass
 
     def on_batch_begin(self, batch, logs=None):
@@ -39,7 +39,7 @@ class Callback:
     def on_train_begin(self, logs=None):
         pass
 
-    def on_train_end(self, logs=None):
+    def on_train_end(self,logs_enabled, logs=None):
         pass
 
 
@@ -68,10 +68,10 @@ class CallbackContainer:
         for callback in self.callbacks:
             callback.on_epoch_begin(epoch, logs)
 
-    def on_epoch_end(self, epoch, logs=None):
+    def on_epoch_end(self, epoch,logs_enabled, logs=None):
         logs = logs or {}
         for callback in self.callbacks:
-            callback.on_epoch_end(epoch, logs)
+            callback.on_epoch_end(epoch, logs_enabled, logs)
 
     def on_batch_begin(self, batch, logs=None):
         logs = logs or {}
@@ -89,10 +89,10 @@ class CallbackContainer:
         for callback in self.callbacks:
             callback.on_train_begin(logs)
 
-    def on_train_end(self, logs=None):
+    def on_train_end(self,logs_enabled, logs=None):
         logs = logs or {}
         for callback in self.callbacks:
-            callback.on_train_end(logs)
+            callback.on_train_end(logs_enabled, logs)
 
 
 @dataclass
@@ -131,7 +131,7 @@ class EarlyStopping(Callback):
             self.best_loss = -self.best_loss
         super().__init__()
 
-    def on_epoch_end(self, epoch, logs=None):
+    def on_epoch_end(self, epoch, logs_enabled, logs=None):
         current_loss = logs.get(self.early_stopping_metric)
         if current_loss is None:
             return
@@ -162,34 +162,35 @@ class EarlyStopping(Callback):
         print(self.best_msg)
         if self.trainer.log:
             self.trainer.log.save_log(self.trainer.history['msg'] + '\n' + self.best_msg)
-        with open(self.trainer.log.log_dir + '/losses_log.csv', 'a+', newline='') as f:
-            f.seek(0)
-            last_best_loss = None
-            try:
-                reader = list(csv.reader(f))
-                if len(reader) > 1:
-                    last_best_loss = float(reader[-1][2])
-            except Exception:
+        if logs_enabled:
+            with open(self.trainer.log.log_dir + '/losses_log.csv', 'a+', newline='') as f:
+                f.seek(0)
                 last_best_loss = None
-            loss = logs.get('loss')
-            writer = csv.writer(f)
-            if os.stat(self.trainer.log.log_dir + '/losses_log.csv').st_size == 0:
-                writer.writerow(['epoch', 'loss', 'best_loss'])
-            if last_best_loss is None or loss < last_best_loss:
-                best_loss = loss
-            else:
-                best_loss = last_best_loss
-            writer.writerow([epoch, loss, best_loss])
+                try:
+                    reader = list(csv.reader(f))
+                    if len(reader) > 1:
+                        last_best_loss = float(reader[-1][2])
+                except Exception:
+                    last_best_loss = None
+                loss = logs.get('loss')
+                writer = csv.writer(f)
+                if os.stat(self.trainer.log.log_dir + '/losses_log.csv').st_size == 0:
+                    writer.writerow(['epoch', 'loss', 'best_loss'])
+                if last_best_loss is None or loss < last_best_loss:
+                    best_loss = loss
+                else:
+                    best_loss = last_best_loss
+                writer.writerow([epoch, loss, best_loss])
 
-        with open(self.trainer.log.log_dir + '/valid_mse_log.csv', 'a', newline='') as f:
-            writer = csv.writer(f)
-            if os.stat(self.trainer.log.log_dir + '/valid_mse_log.csv').st_size == 0:
-                writer.writerow(['epoch', 'valid_mse', 'best_valid_mse'])
-            writer.writerow([epoch, current_loss, self.best_loss])
+            with open(self.trainer.log.log_dir + '/valid_mse_log.csv', 'a', newline='') as f:
+                writer = csv.writer(f)
+                if os.stat(self.trainer.log.log_dir + '/valid_mse_log.csv').st_size == 0:
+                    writer.writerow(['epoch', 'valid_mse', 'best_valid_mse'])
+                writer.writerow([epoch, current_loss, self.best_loss])
 
 
 
-    def on_train_end(self, logs=None):
+    def on_train_end(self, logs_enabeld, logs=None):
         self.trainer.best_epoch = self.best_epoch
         self.trainer.best_cost = self.best_loss
 
@@ -213,7 +214,7 @@ class EarlyStopping(Callback):
         print("Best weights from best epoch are automatically used!")
 
         #plotear losse_log
-        if self.trainer.log:
+        if self.trainer.log and logs_enabeld:
             import matplotlib.pyplot as plt
 
             with open(self.trainer.log.log_dir + '/losses_log.csv', 'r') as f:
@@ -239,7 +240,7 @@ class EarlyStopping(Callback):
             plt.savefig(self.trainer.log.log_dir + '/losses_plot_zoom.png')
 
         #plotear valid_mse_log
-        if self.trainer.log:
+        if self.trainer.log and logs_enabeld:
             with open(self.trainer.log.log_dir + '/valid_mse_log.csv', 'r') as f:
                 reader = csv.reader(f)
                 next(reader)
@@ -300,7 +301,7 @@ class History(Callback):
         self.epoch_metrics = {"loss": 0.0}
         self.samples_seen = 0.0
 
-    def on_epoch_end(self, epoch, logs=None):
+    def on_epoch_end(self, epoch,logs_enabled = None, logs=None):
         self.epoch_metrics["loss"] = self.epoch_loss
         for metric_name, metric_value in self.epoch_metrics.items():
             self.history[metric_name].append(metric_value)
@@ -373,5 +374,5 @@ class LRSchedulerCallback(Callback):
         else:
             pass
 
-    def on_epoch_end(self, epoch, logs=None):
+    def on_epoch_end(self, epoch, logs_enabled = None, logs=None):
         self.scheduler.step()

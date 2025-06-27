@@ -34,6 +34,5 @@ batch_size = 32
 
 list_batches = batches_partition(X_train, X_val, y_train, y_val , batch_size)
 
-print(list_batches)
 
 
